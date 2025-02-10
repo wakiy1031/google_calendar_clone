@@ -5,3 +5,10 @@ export interface Event {
 }
 
 export type ViewMode = "month" | "week";
+
+export interface CalendarContextType {
+  currentDate: Date;
+  setCurrentDate: (date: Date) => void;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+}
