@@ -28,7 +28,7 @@ export default function MonthView() {
   const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
 
   return (
-    <div className="w-full">
+    <div className="w-full p-2 rounded-xl bg-white">
       {/* 曜日の行 */}
       <div className="grid grid-cols-7 mb-2">
         {weekDays.map((day) => (
@@ -53,7 +53,7 @@ export default function MonthView() {
             `}
           >
             <span
-              className={`text-xs p-1 ${
+              className={`text-xs w-6 h-6 flex justify-center items-center mx-auto ${
                 isSameDay(day, new Date())
                   ? "rounded-full bg-blue-600 text-white"
                   : ""
