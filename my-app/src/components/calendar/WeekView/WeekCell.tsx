@@ -8,6 +8,7 @@ interface WeekCellProps {
   date: Date;
   isToday: boolean;
   onTimeClick: (date: Date, time: string) => void;
+  onDateChange?: (date: Date) => void;
   events: Event[];
   hasAllDayEvent: boolean;
   maxAllDayEvents: number;
@@ -17,6 +18,7 @@ export default function WeekCell({
   date,
   isToday,
   onTimeClick,
+  onDateChange,
   events,
   hasAllDayEvent,
   maxAllDayEvents,
@@ -51,7 +53,7 @@ export default function WeekCell({
     <div className="relative">
       {/* 日付表示 */}
       <div
-        className={`text-center sticky top-0 bg-white z-10 pt-1 pb-4 border-b eventSpace ${
+        className={`text-center sticky top-0 bg-white z-20 pt-1 pb-4 border-b eventSpace ${
           hasAllDayEvent ? `active count-${maxAllDayEvents}` : ""
         }`}
         style={{
@@ -61,13 +63,17 @@ export default function WeekCell({
         }}
       >
         <div className="relative">
-          <span
-            className={`text-lg w-10 h-10 flex justify-center items-center mx-auto ${
-              isToday ? "rounded-full bg-blue-600 text-white" : ""
+          <button
+            type="button"
+            onClick={() => onTimeClick(date, "00:00")}
+            className={`text-lg w-10 h-10 flex justify-center items-center mx-auto rounded-full transition-colors ${
+              isToday
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "hover:bg-gray-200"
             }`}
           >
             {format(date, "d")}
-          </span>
+          </button>
           {/* 終日イベントの表示 */}
           {dayEvents
             .filter(

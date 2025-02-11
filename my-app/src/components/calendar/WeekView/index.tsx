@@ -8,7 +8,7 @@ import EventModal from "@/components/events/EventModal";
 import { useState } from "react";
 
 export default function WeekView() {
-  const { currentDate, addEvent, events } = useCalendar();
+  const { currentDate, setCurrentDate, addEvent, events } = useCalendar();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | undefined>();
@@ -39,6 +39,10 @@ export default function WeekView() {
     setSelectedDate(date);
     setSelectedTime(time);
     setIsModalOpen(true);
+  };
+
+  const handleDateChange = (date: Date) => {
+    setCurrentDate(date);
   };
 
   return (
@@ -78,6 +82,7 @@ export default function WeekView() {
             date={day}
             isToday={isSameDay(day, new Date())}
             onTimeClick={handleTimeClick}
+            onDateChange={handleDateChange}
             events={events}
             hasAllDayEvent={hasAllDayEvent}
             maxAllDayEvents={maxAllDayEvents}

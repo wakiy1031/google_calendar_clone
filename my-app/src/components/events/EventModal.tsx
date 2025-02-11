@@ -11,11 +11,12 @@ import {
   Button,
   FormControl,
   Label,
-  Select,
-  Option,
+  useDisclosure,
 } from "@yamada-ui/react";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
+import DatePickerCalendar from "./DatePickerCalendar";
+import TimeSelector from "./TimeSelector";
 
 interface EventModalProps {
   isOpen: boolean;
@@ -34,31 +35,35 @@ export default function EventModal({
   onSave,
   isMonthView = false,
 }: EventModalProps) {
-  const timeOptions = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2);
-    const minute = i % 2 === 0 ? "00" : "30";
-    return `${hour.toString().padStart(2, "0")}:${minute}`;
-  });
-
   const [showTimeSelect, setShowTimeSelect] = useState(!isMonthView);
+  const [currentDate, setCurrentDate] = useState(selectedDate);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(currentDate);
   const [startTime, setStartTime] = useState(selectedTime || "00:00");
   const [endTime, setEndTime] = useState(
-    timeOptions[timeOptions.indexOf(startTime) + 1]
+    selectedTime
+      ? `${parseInt(selectedTime.split(":")[0]) + 1}:${
+          selectedTime.split(":")[1]
+        }`
+      : "01:00"
   );
+
+  // selectedDateが変更されたときにcurrentDateを更新
+  useEffect(() => {
+    setCurrentDate(selectedDate);
+  }, [selectedDate]);
 
   // selectedTimeが変更されたときにstartTimeを更新（初回のみ）
   useEffect(() => {
-    if (selectedTime && timeOptions.includes(selectedTime)) {
+    if (selectedTime) {
       setStartTime(selectedTime);
-      setEndTime(timeOptions[timeOptions.indexOf(selectedTime) + 1]);
+      setEndTime(
+        `${parseInt(selectedTime.split(":")[0]) + 1}:${
+          selectedTime.split(":")[1]
+        }`
+      );
     }
   }, [selectedTime]);
-
-  // 終了時間の選択肢を取得（開始時間より後のみ）
-  const getEndTimeOptions = () => {
-    const startIndex = timeOptions.indexOf(startTime);
-    return timeOptions.slice(startIndex + 1);
-  };
 
   // モーダルが閉じられるときの処理
   const handleClose = () => {
@@ -74,15 +79,20 @@ export default function EventModal({
 
     onSave({
       title: formData.get("title") as string,
-      date: selectedDate,
+      date: currentDate,
       startTime: showTimeSelect ? startTime : "00:00",
       endTime: showTimeSelect ? endTime : "23:59",
     });
     handleClose();
   };
 
+  const handleDateSelect = (date: Date) => {
+    setCurrentDate(date);
+    setShowCalendar(false);
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={handleClose} size="xl" height="55dvh">
       <ModalOverlay />
       <ModalBody overflow="none">
         <ModalHeader>予定を追加</ModalHeader>
@@ -95,7 +105,24 @@ export default function EventModal({
 
           <FormControl>
             <Label>日付</Label>
-            <Input value={format(selectedDate, "yyyy/MM/dd")} readOnly />
+            <div className="relative">
+              <Input
+                value={format(currentDate, "yyyy/MM/dd")}
+                readOnly
+                cursor="pointer"
+                onClick={() => setShowCalendar(!showCalendar)}
+              />
+              {showCalendar && (
+                <div className="absolute top-full left-0 mt-1 p-2 bg-white rounded-lg shadow-lg z-50">
+                  <DatePickerCalendar
+                    currentDate={currentDate}
+                    calendarMonth={calendarMonth}
+                    setCalendarMonth={setCalendarMonth}
+                    onDateSelect={handleDateSelect}
+                  />
+                </div>
+              )}
+            </div>
           </FormControl>
 
           {isMonthView && !showTimeSelect && (
@@ -110,44 +137,17 @@ export default function EventModal({
           )}
 
           {showTimeSelect && (
-            <div className="grid grid-cols-2 gap-4">
-              <FormControl>
-                <Label>開始時間</Label>
-                <Select
-                  name="startTime"
-                  value={startTime}
-                  onChange={(value) => {
-                    if (value) {
-                      setStartTime(value);
-                      setEndTime(timeOptions[timeOptions.indexOf(value) + 1]);
-                    }
-                  }}
-                  items={timeOptions.slice(0, -1).map((time) => ({
-                    label: time,
-                    value: time,
-                  }))}
-                  required
-                />
-              </FormControl>
-
-              <FormControl>
-                <Label>終了時間</Label>
-                <Select
-                  name="endTime"
-                  value={endTime}
-                  onChange={(value) => {
-                    if (value) {
-                      setEndTime(value);
-                    }
-                  }}
-                  items={getEndTimeOptions().map((time) => ({
-                    label: time,
-                    value: time,
-                  }))}
-                  required
-                />
-              </FormControl>
-            </div>
+            <TimeSelector
+              startTime={startTime}
+              endTime={endTime}
+              onStartTimeChange={(time) => {
+                setStartTime(time);
+                setEndTime(
+                  `${parseInt(time.split(":")[0]) + 1}:${time.split(":")[1]}`
+                );
+              }}
+              onEndTimeChange={setEndTime}
+            />
           )}
 
           <div className="flex justify-end gap-2 pt-4">
