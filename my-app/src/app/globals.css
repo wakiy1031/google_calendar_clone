@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.eventSpace.active {
+  padding-bottom: 4rem;
+}
+
+.eventPadding.active {
+  padding-top: 1rem;
+}
+
+.eventPadding.active.count-2 {
+  padding-top: 3rem;
+}
+
+.eventPadding.active.count-3 {
+  padding-top: 5rem;
+}
+
+.eventPadding.active.count-4 {
+  padding-top: 7rem;
+}

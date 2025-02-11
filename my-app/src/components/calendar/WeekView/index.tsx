@@ -19,6 +19,22 @@ export default function WeekView() {
   const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
+  // 週に終日イベントがあるかどうかを判定
+  const hasAllDayEvent = events.some(
+    (event) => event.startTime === "00:00" && event.endTime === "23:59"
+  );
+
+  // 週内の最大終日イベント数を計算
+  const maxAllDayEvents = days.reduce((max, day) => {
+    const dayEventCount = events.filter(
+      (event) =>
+        isSameDay(event.date, day) &&
+        event.startTime === "00:00" &&
+        event.endTime === "23:59"
+    ).length;
+    return Math.max(max, dayEventCount);
+  }, 0);
+
   const handleTimeClick = (date: Date, time: string) => {
     setSelectedDate(date);
     setSelectedTime(time);
@@ -40,7 +56,12 @@ export default function WeekView() {
       {/* 時間のグリッド */}
       <div className="grid grid-cols-[60px_repeat(7,1fr)]">
         {/* 時間軸 */}
-        <div className="mt-12">
+        <div
+          className={`eventPadding ${
+            hasAllDayEvent ? `active count-${maxAllDayEvents}` : ""
+          }`}
+        >
+          <div className="h-[48px] relative"></div>
           {hours.map((hour) => (
             <div key={hour} className="h-[60px] relative">
               <span className="absolute top-1 right-2 text-xs text-gray-400">
@@ -58,6 +79,8 @@ export default function WeekView() {
             isToday={isSameDay(day, new Date())}
             onTimeClick={handleTimeClick}
             events={events}
+            hasAllDayEvent={hasAllDayEvent}
+            maxAllDayEvents={maxAllDayEvents}
           />
         ))}
       </div>

@@ -9,6 +9,8 @@ interface WeekCellProps {
   isToday: boolean;
   onTimeClick: (date: Date, time: string) => void;
   events: Event[];
+  hasAllDayEvent: boolean;
+  maxAllDayEvents: number;
 }
 
 export default function WeekCell({
@@ -16,6 +18,8 @@ export default function WeekCell({
   isToday,
   onTimeClick,
   events,
+  hasAllDayEvent,
+  maxAllDayEvents,
 }: WeekCellProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -39,18 +43,47 @@ export default function WeekCell({
 
   // その日のイベントをフィルタリング
   const dayEvents = events.filter((event) => isSameDay(event.date, date));
+  const allDayEventsCount = dayEvents.filter(
+    (event) => event.startTime === "00:00" && event.endTime === "23:59"
+  ).length;
 
   return (
     <div className="relative">
       {/* 日付表示 */}
-      <div className="text-center sticky top-0 bg-white z-10 pt-1 pb-4 border-b">
-        <span
-          className={`text-lg w-10 h-10 flex justify-center items-center mx-auto ${
-            isToday ? "rounded-full bg-blue-600 text-white" : ""
-          }`}
-        >
-          {format(date, "d")}
-        </span>
+      <div
+        className={`text-center sticky top-0 bg-white z-10 pt-1 pb-4 border-b eventSpace ${
+          hasAllDayEvent ? `active count-${maxAllDayEvents}` : ""
+        }`}
+        style={{
+          paddingBottom: hasAllDayEvent
+            ? `${maxAllDayEvents * 2}rem`
+            : undefined,
+        }}
+      >
+        <div className="relative">
+          <span
+            className={`text-lg w-10 h-10 flex justify-center items-center mx-auto ${
+              isToday ? "rounded-full bg-blue-600 text-white" : ""
+            }`}
+          >
+            {format(date, "d")}
+          </span>
+          {/* 終日イベントの表示 */}
+          {dayEvents
+            .filter(
+              (event) =>
+                event.startTime === "00:00" && event.endTime === "23:59"
+            )
+            .map((event, index) => (
+              <div
+                key={event.id}
+                className="text-xs mb-1 p-1 bg-blue-400 text-white rounded truncate mx-1 absolute left-1/2 -translate-x-1/2"
+                style={{ bottom: `${-2 - index * 1.75}rem` }}
+              >
+                {event.title || "（タイトルなし）"}
+              </div>
+            ))}
+        </div>
       </div>
 
       {/* 時間ごとのセル */}
@@ -88,34 +121,40 @@ export default function WeekCell({
           </div>
         ))}
 
-        {/* イベントの表示 */}
-        {dayEvents.map((event) => {
-          const [startHour, startMinute] = event.startTime
-            .split(":")
-            .map(Number);
-          const [endHour, endMinute] = event.endTime.split(":").map(Number);
-          const top = startHour * 60 + (startMinute / 30) * 30;
-          const height =
-            (endHour - startHour) * 60 + ((endMinute - startMinute) / 30) * 30;
+        {/* 時間指定ありのイベントの表示 */}
+        {dayEvents
+          .filter(
+            (event) =>
+              !(event.startTime === "00:00" && event.endTime === "23:59")
+          )
+          .map((event) => {
+            const [startHour, startMinute] = event.startTime
+              .split(":")
+              .map(Number);
+            const [endHour, endMinute] = event.endTime.split(":").map(Number);
+            const top = startHour * 60 + (startMinute / 30) * 30;
+            const height =
+              (endHour - startHour) * 60 +
+              ((endMinute - startMinute) / 30) * 30;
 
-          return (
-            <div
-              key={event.id}
-              className="absolute left-0 right-0 mx-1 rounded bg-blue-400 border border-blue-200 p-0.5 overflow-hidden"
-              style={{
-                top: `${top}px`,
-                height: `${height}px`,
-              }}
-            >
-              <div className="text-xs truncate leading-none text-white">
-                {event.title ? event.title : "（タイトルなし）"}
+            return (
+              <div
+                key={event.id}
+                className="absolute left-0 right-0 mx-1 rounded bg-blue-400 border border-blue-200 p-0.5 overflow-hidden"
+                style={{
+                  top: `${top}px`,
+                  height: `${height}px`,
+                }}
+              >
+                <div className="text-xs truncate leading-none text-white">
+                  {event.title ? event.title : "（タイトルなし）"}
+                </div>
+                <div className="text-xs text-white -mt-0.5">
+                  {event.startTime} ~ {event.endTime}
+                </div>
               </div>
-              <div className="text-xs text-white -mt-0.5">
-                {event.startTime} ~ {event.endTime}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
     </div>
   );
