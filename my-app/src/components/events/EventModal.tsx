@@ -23,6 +23,7 @@ interface EventModalProps {
   selectedDate: Date;
   selectedTime?: string;
   onSave: (event: Omit<Event, "id">) => void;
+  isMonthView?: boolean;
 }
 
 export default function EventModal({
@@ -31,6 +32,7 @@ export default function EventModal({
   selectedDate,
   selectedTime,
   onSave,
+  isMonthView = false,
 }: EventModalProps) {
   const timeOptions = Array.from({ length: 48 }, (_, i) => {
     const hour = Math.floor(i / 2);
@@ -38,6 +40,7 @@ export default function EventModal({
     return `${hour.toString().padStart(2, "0")}:${minute}`;
   });
 
+  const [showTimeSelect, setShowTimeSelect] = useState(!isMonthView);
   const [startTime, setStartTime] = useState(selectedTime || "00:00");
   const [endTime, setEndTime] = useState(
     timeOptions[timeOptions.indexOf(startTime) + 1]
@@ -57,6 +60,14 @@ export default function EventModal({
     return timeOptions.slice(startIndex + 1);
   };
 
+  // モーダルが閉じられるときの処理
+  const handleClose = () => {
+    onClose();
+    if (isMonthView) {
+      setShowTimeSelect(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -64,14 +75,14 @@ export default function EventModal({
     onSave({
       title: formData.get("title") as string,
       date: selectedDate,
-      startTime,
-      endTime,
+      startTime: showTimeSelect ? startTime : "00:00",
+      endTime: showTimeSelect ? endTime : "23:59",
     });
-    onClose();
+    handleClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay />
       <ModalBody overflow="none">
         <ModalHeader>予定を追加</ModalHeader>
@@ -87,47 +98,60 @@ export default function EventModal({
             <Input value={format(selectedDate, "yyyy/MM/dd")} readOnly />
           </FormControl>
 
-          <div className="grid grid-cols-2 gap-4">
-            <FormControl>
-              <Label>開始時間</Label>
-              <Select
-                name="startTime"
-                value={startTime}
-                onChange={(value) => {
-                  if (value) {
-                    setStartTime(value);
-                    setEndTime(timeOptions[timeOptions.indexOf(value) + 1]);
-                  }
-                }}
-                items={timeOptions.slice(0, -1).map((time) => ({
-                  label: time,
-                  value: time,
-                }))}
-                required
-              />
-            </FormControl>
+          {isMonthView && !showTimeSelect && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowTimeSelect(true)}
+            >
+              時間を指定する
+            </Button>
+          )}
 
-            <FormControl>
-              <Label>終了時間</Label>
-              <Select
-                name="endTime"
-                value={endTime}
-                onChange={(value) => {
-                  if (value) {
-                    setEndTime(value);
-                  }
-                }}
-                items={getEndTimeOptions().map((time) => ({
-                  label: time,
-                  value: time,
-                }))}
-                required
-              />
-            </FormControl>
-          </div>
+          {showTimeSelect && (
+            <div className="grid grid-cols-2 gap-4">
+              <FormControl>
+                <Label>開始時間</Label>
+                <Select
+                  name="startTime"
+                  value={startTime}
+                  onChange={(value) => {
+                    if (value) {
+                      setStartTime(value);
+                      setEndTime(timeOptions[timeOptions.indexOf(value) + 1]);
+                    }
+                  }}
+                  items={timeOptions.slice(0, -1).map((time) => ({
+                    label: time,
+                    value: time,
+                  }))}
+                  required
+                />
+              </FormControl>
+
+              <FormControl>
+                <Label>終了時間</Label>
+                <Select
+                  name="endTime"
+                  value={endTime}
+                  onChange={(value) => {
+                    if (value) {
+                      setEndTime(value);
+                    }
+                  }}
+                  items={getEndTimeOptions().map((time) => ({
+                    label: time,
+                    value: time,
+                  }))}
+                  required
+                />
+              </FormControl>
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button onClick={onClose} variant="outline">
+            <Button onClick={handleClose} variant="outline">
               キャンセル
             </Button>
             <Button type="submit" colorScheme="blue">
