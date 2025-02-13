@@ -11,6 +11,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [events, setEvents] = useState<Event[]>([]);
+
   return (
     <CalendarContext.Provider
       value={{
@@ -21,6 +22,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
         events,
         addEvent: (event) =>
           setEvents([...events, { ...event, id: crypto.randomUUID() }]),
+        updateEvent: (event) =>
+          setEvents(events.map((e) => (e.id === event.id ? event : e))),
+        deleteEvent: (id) => setEvents(events.filter((e) => e.id !== id)),
       }}
     >
       {children}

@@ -12,13 +12,18 @@ import {
 } from "date-fns";
 import { ja } from "date-fns/locale";
 import EventModal from "@/components/events/EventModal";
+import EventDetailModal from "@/components/events/EventDetailModal";
 import { useState } from "react";
+import { Event } from "@/types";
 
 export default function MonthView() {
-  const { currentDate, addEvent, events } = useCalendar();
+  const { currentDate, addEvent, updateEvent, deleteEvent, events } =
+    useCalendar();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | undefined>();
+  const [selectedEvent, setSelectedEvent] = useState<Event | undefined>();
 
   // 月の最初の日から最後の日までを取得
   const monthStart = startOfMonth(currentDate);
@@ -35,10 +40,41 @@ export default function MonthView() {
   const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
 
   // 日付クリック時のハンドラー
-  const handleDateClick = (date: Date) => {
+  const handleDateClick = (e: React.MouseEvent<HTMLDivElement>, date: Date) => {
+    e.preventDefault();
     setSelectedDate(date);
     setSelectedTime("00:00");
+    setSelectedEvent(undefined);
     setIsModalOpen(true);
+  };
+
+  const handleEventClick = (
+    e: React.MouseEvent<HTMLDivElement>,
+    event: Event
+  ) => {
+    e.stopPropagation();
+    setSelectedEvent(event);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleEditEvent = () => {
+    setIsDetailModalOpen(false);
+    setSelectedDate(selectedEvent!.date);
+    setSelectedTime(selectedEvent!.startTime);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteEvent = () => {
+    if (selectedEvent) {
+      deleteEvent(selectedEvent.id);
+      setIsDetailModalOpen(false);
+      setSelectedEvent(undefined);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(undefined);
   };
 
   return (
@@ -71,7 +107,7 @@ export default function MonthView() {
                     : ""
                 }
               `}
-              onClick={() => handleDateClick(day)}
+              onClick={(e) => handleDateClick(e, day)}
             >
               <span
                 className={`text-xs w-6 h-6 flex justify-center items-center mx-auto ${
@@ -90,8 +126,9 @@ export default function MonthView() {
                     event.startTime === "00:00" && event.endTime === "23:59";
                   return (
                     <div
+                      onClick={(e) => handleEventClick(e, event)}
                       key={event.id}
-                      className={`text-xs mb-1 p-1 truncate ${
+                      className={`text-xs mb-1 p-1 truncate hover:opacity-75 ${
                         isAllDay
                           ? "bg-blue-400 text-white rounded"
                           : "text-gray-700"
@@ -118,15 +155,29 @@ export default function MonthView() {
         })}
       </div>
 
-      {/* イベント作成モーダル */}
+      {/* イベント作成/編集モーダル */}
       {selectedDate && (
         <EventModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={handleCloseModal}
           selectedDate={selectedDate}
           selectedTime={selectedTime}
           onSave={addEvent}
+          onUpdate={updateEvent}
+          onDelete={deleteEvent}
           isMonthView={true}
+          event={selectedEvent}
+        />
+      )}
+
+      {/* イベント詳細モーダル */}
+      {selectedEvent && (
+        <EventDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          event={selectedEvent}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
         />
       )}
     </div>

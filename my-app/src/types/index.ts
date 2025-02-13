@@ -15,4 +15,6 @@ export interface CalendarContextType {
   setViewMode: (mode: ViewMode) => void;
   events: Event[];
   addEvent: (event: Omit<Event, "id">) => void;
+  updateEvent: (event: Event) => void;
+  deleteEvent: (id: string) => void;
 }

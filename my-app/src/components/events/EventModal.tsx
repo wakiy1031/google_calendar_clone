@@ -24,7 +24,10 @@ interface EventModalProps {
   selectedDate: Date;
   selectedTime?: string;
   onSave: (event: Omit<Event, "id">) => void;
+  onUpdate?: (event: Event) => void;
+  onDelete?: (id: string) => void;
   isMonthView?: boolean;
+  event?: Event;
 }
 
 export default function EventModal({
@@ -33,12 +36,16 @@ export default function EventModal({
   selectedDate,
   selectedTime,
   onSave,
+  onUpdate,
+  onDelete,
   isMonthView = false,
+  event,
 }: EventModalProps) {
   const [showTimeSelect, setShowTimeSelect] = useState(!isMonthView);
   const [currentDate, setCurrentDate] = useState(selectedDate);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(currentDate);
+  const [title, setTitle] = useState(event?.title || "");
   const [startTime, setStartTime] = useState(selectedTime || "00:00");
   const [endTime, setEndTime] = useState(
     selectedTime
@@ -65,6 +72,19 @@ export default function EventModal({
     }
   }, [selectedTime]);
 
+  // eventが変更されたときに各フィールドを更新
+  useEffect(() => {
+    if (event) {
+      setTitle(event.title);
+      setCurrentDate(event.date);
+      setStartTime(event.startTime);
+      setEndTime(event.endTime);
+      setShowTimeSelect(
+        !(event.startTime === "00:00" && event.endTime === "23:59")
+      );
+    }
+  }, [event]);
+
   // モーダルが閉じられるときの処理
   const handleClose = () => {
     onClose();
@@ -75,14 +95,19 @@ export default function EventModal({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
 
-    onSave({
-      title: formData.get("title") as string,
+    const eventData = {
+      title,
       date: currentDate,
       startTime: showTimeSelect ? startTime : "00:00",
       endTime: showTimeSelect ? endTime : "23:59",
-    });
+    };
+
+    if (event && onUpdate) {
+      onUpdate({ ...eventData, id: event.id });
+    } else {
+      onSave(eventData);
+    }
     handleClose();
   };
 
@@ -91,16 +116,28 @@ export default function EventModal({
     setShowCalendar(false);
   };
 
+  const handleDelete = () => {
+    if (event && onDelete) {
+      onDelete(event.id);
+      handleClose();
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="xl" height="55dvh">
       <ModalOverlay />
       <ModalBody overflow="none">
-        <ModalHeader>予定を追加</ModalHeader>
+        <ModalHeader>{event ? "予定を編集" : "予定を追加"}</ModalHeader>
         <ModalCloseButton />
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
           <FormControl>
             <Label>タイトル</Label>
-            <Input name="title" placeholder="予定のタイトル" />
+            <Input
+              name="title"
+              placeholder="予定のタイトル"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </FormControl>
 
           <FormControl>
@@ -151,11 +188,22 @@ export default function EventModal({
           )}
 
           <div className="flex justify-end gap-2 pt-4">
+            {event && onDelete && (
+              <Button
+                type="button"
+                onClick={handleDelete}
+                colorScheme="red"
+                variant="outline"
+              >
+                削除
+              </Button>
+            )}
+            <div className="flex-grow" />
             <Button onClick={handleClose} variant="outline">
               キャンセル
             </Button>
             <Button type="submit" colorScheme="blue">
-              保存
+              {event ? "更新" : "保存"}
             </Button>
           </div>
         </form>
