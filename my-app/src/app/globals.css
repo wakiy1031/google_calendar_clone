@@ -2,20 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+.eventSpace.active {
+  padding-bottom: 4rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.eventPadding.active {
+  padding-top: 1rem;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+.eventPadding.active.count-2 {
+  padding-top: 3rem;
+}
+
+.eventPadding.active.count-3 {
+  padding-top: 5rem;
+}
+
+.eventPadding.active.count-4 {
+  padding-top: 7rem;
 }
