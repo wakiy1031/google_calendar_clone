@@ -4,15 +4,13 @@ import { Event } from "@/types";
 import {
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalOverlay,
-  Button,
-  Flex,
   IconButton,
+  Flex,
 } from "@yamada-ui/react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { MdEdit, MdDelete } from "react-icons/md";
+import { MdMoreVert, MdEdit, MdDelete, MdEmail } from "react-icons/md";
 
 interface EventDetailModalProps {
   isOpen: boolean;
@@ -32,7 +30,7 @@ export default function EventDetailModal({
   const isAllDay = event.startTime === "00:00" && event.endTime === "23:59";
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md" width="full">
+    <Modal isOpen={isOpen} onClose={onClose} size="md">
       <ModalOverlay />
       <ModalBody p={0} overflow="hidden" w="full" px={4}>
         <Flex alignItems="center" ml="auto" mr={8} mt={-2}>

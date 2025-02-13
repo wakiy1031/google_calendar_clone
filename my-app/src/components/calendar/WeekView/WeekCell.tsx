@@ -8,7 +8,7 @@ interface WeekCellProps {
   date: Date;
   isToday: boolean;
   onTimeClick: (date: Date, time: string) => void;
-  onDateChange?: (date: Date) => void;
+  onEventClick: (event: Event) => void;
   events: Event[];
   hasAllDayEvent: boolean;
   maxAllDayEvents: number;
@@ -18,7 +18,7 @@ export default function WeekCell({
   date,
   isToday,
   onTimeClick,
-  onDateChange,
+  onEventClick,
   events,
   hasAllDayEvent,
   maxAllDayEvents,
@@ -83,7 +83,11 @@ export default function WeekCell({
             .map((event, index) => (
               <div
                 key={event.id}
-                className="text-xs mb-1 p-1 bg-blue-400 text-white rounded truncate mx-1 absolute left-1/2 -translate-x-1/2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEventClick(event);
+                }}
+                className="text-xs mb-1 p-1 bg-blue-400 text-white rounded truncate mx-1 absolute left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-75"
                 style={{ bottom: `${-2 - index * 1.75}rem` }}
               >
                 {event.title || "（タイトルなし）"}
@@ -146,7 +150,11 @@ export default function WeekCell({
             return (
               <div
                 key={event.id}
-                className="absolute left-0 right-0 mx-1 rounded bg-blue-400 border border-blue-200 p-0.5 overflow-hidden"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEventClick(event);
+                }}
+                className="absolute left-0 right-0 mx-1 rounded bg-blue-400 border border-blue-200 p-0.5 overflow-hidden cursor-pointer hover:opacity-75"
                 style={{
                   top: `${top}px`,
                   height: `${height}px`,

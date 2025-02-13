@@ -5,13 +5,18 @@ import { startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns";
 import { ja } from "date-fns/locale";
 import WeekCell from "./WeekCell";
 import EventModal from "@/components/events/EventModal";
+import EventDetailModal from "@/components/events/EventDetailModal";
 import { useState } from "react";
+import { Event } from "@/types";
 
 export default function WeekView() {
-  const { currentDate, setCurrentDate, addEvent, events } = useCalendar();
+  const { currentDate, addEvent, updateEvent, deleteEvent, events } =
+    useCalendar();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | undefined>();
+  const [selectedEvent, setSelectedEvent] = useState<Event | undefined>();
 
   const weekStart = startOfWeek(currentDate, { locale: ja });
   const weekEnd = endOfWeek(currentDate, { locale: ja });
@@ -38,11 +43,33 @@ export default function WeekView() {
   const handleTimeClick = (date: Date, time: string) => {
     setSelectedDate(date);
     setSelectedTime(time);
+    setSelectedEvent(undefined);
     setIsModalOpen(true);
   };
 
-  const handleDateChange = (date: Date) => {
-    setCurrentDate(date);
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleEditEvent = () => {
+    setIsDetailModalOpen(false);
+    setSelectedDate(selectedEvent!.date);
+    setSelectedTime(selectedEvent!.startTime);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteEvent = () => {
+    if (selectedEvent) {
+      deleteEvent(selectedEvent.id);
+      setIsDetailModalOpen(false);
+      setSelectedEvent(undefined);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(undefined);
   };
 
   return (
@@ -82,7 +109,7 @@ export default function WeekView() {
             date={day}
             isToday={isSameDay(day, new Date())}
             onTimeClick={handleTimeClick}
-            onDateChange={handleDateChange}
+            onEventClick={handleEventClick}
             events={events}
             hasAllDayEvent={hasAllDayEvent}
             maxAllDayEvents={maxAllDayEvents}
@@ -90,14 +117,28 @@ export default function WeekView() {
         ))}
       </div>
 
-      {/* イベント作成モーダル */}
+      {/* イベント作成/編集モーダル */}
       {selectedDate && (
         <EventModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={handleCloseModal}
           selectedDate={selectedDate}
           selectedTime={selectedTime}
           onSave={addEvent}
+          onUpdate={updateEvent}
+          onDelete={deleteEvent}
+          event={selectedEvent}
+        />
+      )}
+
+      {/* イベント詳細モーダル */}
+      {selectedEvent && (
+        <EventDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          event={selectedEvent}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
         />
       )}
     </div>
