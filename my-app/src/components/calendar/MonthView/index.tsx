@@ -100,7 +100,7 @@ export default function MonthView() {
             <div
               key={day.toISOString()}
               className={`
-                min-h-[130px] p-1 border text-center cursor-pointer hover:bg-gray-50
+                min-h-[130px] p-1 border text-left cursor-pointer hover:bg-gray-50
                 ${
                   format(day, "M") !== format(currentDate, "M")
                     ? "text-gray-400"
@@ -143,7 +143,9 @@ export default function MonthView() {
                             new Date(`2000-01-01T${event.startTime}`),
                             "HH:mm"
                           )}
-                          {event.title || "（タイトルなし）"}
+                          <span className="ml-2">
+                            {event.title || "（タイトルなし）"}
+                          </span>
                         </>
                       )}
                     </div>

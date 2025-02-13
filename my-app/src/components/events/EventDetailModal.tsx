@@ -34,8 +34,8 @@ export default function EventDetailModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md" width="full">
       <ModalOverlay />
-      <ModalBody p={0} overflow="hidden" w="full">
-        <Flex justifyContent="space-between" alignItems="center">
+      <ModalBody p={0} overflow="hidden" w="full" px={4}>
+        <Flex alignItems="center" ml="auto" mr={8} mt={-2}>
           <IconButton
             aria-label="Edit"
             icon={<MdEdit />}
@@ -50,17 +50,16 @@ export default function EventDetailModal({
             variant="ghost"
             _hover={{ bg: "whiteAlpha.200" }}
           />
-          <ModalCloseButton _hover={{ bg: "whiteAlpha.200" }} />
         </Flex>
-        <h2 className="text-xl font-medium mb-4">
+        <h2 className="text-xl font-medium mb-2">
           {event.title || "（タイトルなし）"}
         </h2>
         <p className="text-sm">
-          {format(event.date, "yyyy年M月d日（E）", { locale: ja })}
+          {format(event.date, "yyyy年M月d日（E曜日）", { locale: ja })}
           {!isAllDay && (
             <>
               {" "}
-              · {event.startTime}～{event.endTime}
+              ・{event.startTime}～{event.endTime}
             </>
           )}
         </p>
