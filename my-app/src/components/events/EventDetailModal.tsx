@@ -10,7 +10,7 @@ import {
 } from "@yamada-ui/react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { MdMoreVert, MdEdit, MdDelete, MdEmail } from "react-icons/md";
+import { MdEdit, MdDelete } from "react-icons/md";
 
 interface EventDetailModalProps {
   isOpen: boolean;

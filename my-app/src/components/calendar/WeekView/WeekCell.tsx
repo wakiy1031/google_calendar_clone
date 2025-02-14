@@ -45,9 +45,6 @@ export default function WeekCell({
 
   // その日のイベントをフィルタリング
   const dayEvents = events.filter((event) => isSameDay(event.date, date));
-  const allDayEventsCount = dayEvents.filter(
-    (event) => event.startTime === "00:00" && event.endTime === "23:59"
-  ).length;
 
   return (
     <div className="relative">
