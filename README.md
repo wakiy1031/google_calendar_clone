@@ -1,4 +1,4 @@
-# Next.js TypeScript Calendar App
+# Google Calendar Clone App
 
 ## デモ
 
