@@ -2,7 +2,7 @@
 
 ## デモ
 
-[カレンダーアプリを見る](https://nextjs-ts-calendar-c1mcjzg9w-wakiys-projects.vercel.app/)
+[カレンダーアプリを見る](https://google-calendar-clone-zeta.vercel.app/)
 
 ## 機能
 
